@@ -2,15 +2,17 @@ package security;
 
 
 import org.codehaus.groovy.ast.ClassCodeExpressionTransformer;
+import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.control.SourceUnit;
 
-public class RuntimeSecureVisitor extends ClassCodeExpressionTransformer {
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+public class RuntimeSecureVisitor extends ClassCodeVisitorSupport {
     private SourceUnit sourceUnit;
 
     public RuntimeSecureVisitor(SourceUnit sourceUnit) {
@@ -24,24 +26,30 @@ public class RuntimeSecureVisitor extends ClassCodeExpressionTransformer {
     }
 
     @Override
-    public void visitMethod(MethodNode node) {
-        super.visitMethod(node);
-        System.out.println("inside visitMethod:" + node.getName());
-    }
-    @Override
-    public Expression transform(Expression exp) {
-        if (exp instanceof MethodCallExpression) {
-            MethodCallExpression methodCallExpression = (MethodCallExpression)exp;
-            ArgumentListExpression arguments = new ArgumentListExpression();
-            arguments.addExpression(methodCallExpression.getObjectExpression());
-            arguments.addExpression(methodCallExpression.getMethod());
-            //TODO args list
-            Expression expression = new StaticMethodCallExpression(new ClassNode(GroovyAccessControl.class), "checkCall", arguments);
-            //TODO call method itself
-
-            return expression;
+    public void visitBlockStatement(BlockStatement block) {
+        super.visitBlockStatement(block);
+        java.util.List<org.codehaus.groovy.ast.stmt.Statement> statements = block.getStatements();
+        Iterator<Statement> it = statements.iterator();
+        List<Statement> newList = new ArrayList<Statement>();
+        while (it.hasNext()) {
+            Statement statement = it.next();
+            if (statement instanceof ExpressionStatement) {
+                ExpressionStatement expressionStatement = (ExpressionStatement)statement;
+                Expression exp = expressionStatement.getExpression();
+                if (exp instanceof MethodCallExpression) {
+                    MethodCallExpression methodCallExpression = (MethodCallExpression)exp;
+                    ArgumentListExpression arguments = new ArgumentListExpression();
+                    arguments.addExpression(methodCallExpression.getObjectExpression());
+                    arguments.addExpression(methodCallExpression.getMethod());
+                    Expression expression = new StaticMethodCallExpression(new ClassNode(GroovyAccessControl.class), "checkCall", arguments);
+                    newList.add(new ExpressionStatement(expression));
+                    newList.add(statement);
+                    it.remove();
+                }
+            }
         }
+        block.addStatements(newList);
 
-        return super.transform(exp);
     }
+
 }
