@@ -26,17 +26,22 @@ public class GroovyAccessControl {
     // TODO arguments list
     public Object checkCall(Object object, String methodCall, Closure closure) {
         System.out.println("Inside checkCall" + object.getClass() + "." + methodCall);
-        if (methodsOnReceiverBlacklist != null) {
-            if(methodsOnReceiverBlacklist.contains(object.getClass().getName() + "." + methodCall)) {
-                throw new SecurityException(object.getClass().getName() + "." + methodCall + " is not allowed");
-            }
-        }
-        if (methodsOnReceiverWhitelist != null) {
-            if(!methodsOnReceiverWhitelist.contains(object.getClass().getName() + "." + methodCall)) {
-                throw new SecurityException(object.getClass().getName() + "." + methodCall + " is not allowed");
-            }
-        }
-        return closure.call();
+//        if (methodsOnReceiverBlacklist != null) {
+//            if(methodsOnReceiverBlacklist.contains(object.getClass().getName() + "." + methodCall)) {
+//                throw new SecurityException(object.getClass().getName() + "." + methodCall + " is not allowed");
+//            }
+//        }
+//        if (methodsOnReceiverWhitelist != null) {
+//            if(!methodsOnReceiverWhitelist.contains(object.getClass().getName() + "." + methodCall)) {
+//                throw new SecurityException(object.getClass().getName() + "." + methodCall + " is not allowed");
+//            }
+//        }
+        if (closure != null) {
+            Object o = closure.call(object);
+            return o;
+        } else return null;
+
+
     }
     public Object checkCall(Class clazz, String methodCall, Closure closure) {
         System.out.println("Inside checkCallClazz" + clazz + "." + methodCall);
