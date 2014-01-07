@@ -44,7 +44,7 @@ public class RuntimeSecureVisitor extends ClassCodeExpressionTransformer  {
             arguments.addExpression(expression.getMethod());
             arguments.addExpression(closureExpression);
 
-            return new StaticMethodCallExpression(new ClassNode(GroovyAccessControl.class), "checkCall", arguments);
+            return new MethodCallExpression(new VariableExpression("groovyAccessControl", new ClassNode(GroovyAccessControl.class)), "checkCall", arguments);
         } /*else if(exp instanceof StaticMethodCallExpression) {
             StaticMethodCallExpression expression = (StaticMethodCallExpression)exp;
             ArgumentListExpression arguments = new ArgumentListExpression();
