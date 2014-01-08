@@ -35,11 +35,7 @@ public class RuntimeSecureVisitor extends ClassCodeExpressionTransformer  {
             ExpressionStatement expressionStatement = new ExpressionStatement(expression);
 
             blockStatement.addStatement(expressionStatement);
-            Parameter[] params = new Parameter[1];
-            params[0] = new Parameter(new ClassNode(Object.class), expression.getObjectExpression().getText());
-            ClosureExpression closureExpression = new ClosureExpression(params, blockStatement);
-            closureExpression.setVariableScope(new VariableScope());
-
+            ClosureExpression closureExpression = new ClosureExpression(null, blockStatement);
             ArgumentListExpression arguments = new ArgumentListExpression();
             arguments.addExpression(expression.getObjectExpression());
             arguments.addExpression(expression.getMethod());
